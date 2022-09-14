@@ -1,26 +1,32 @@
-# Install
-BIN = demo
-
-# Flags
-CFLAGS += -std=c89 -Wall -Wextra -pedantic -O2
-
-SRC = main.c
-OBJ = $(SRC:.c=.o)
-
-ifeq ($(OS),Windows_NT)
-BIN := $(BIN).exe
-LIBS = -lglfw3 -lopengl32 -lm -lGLU32 -lGLEW32
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	BIN = .bin
+	LIBGLEW = -lGLEW
+	LIBGL = -framework OpenGL -framework Cocoa -framework IOKit
+	# LIBSDL = -lSDL2
+	LIBGLFW = -lglfw3
 else
-	UNAME_S := $(shell uname -s)
-	GLFW3 := $(shell pkg-config --libs glfw3)
-	ifeq ($(UNAME_S),Darwin)
-		LIBS := $(GLFW3) -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo -lm -lGLEW -L/usr/local/lib
-	else
-		LIBS = $(GLFW3) -lGL -lm -lGLU -lGLEW
-	endif
+	BIN = .bin
+	LIBGLEW := $(shell pkg-config --libs --cflags glew)
+	LIBGL := $(shell pkg-config --libs --cflags gl)
+	# LIBSDL := $(shell pkg-config --libs --cflags sdl2)
+	LIBGLFW := $(shell pkg-config --libs --cflags glfw3)
+	MAKE_XLIB = $(UNAME_S)
 endif
 
-$(BIN):
-	@mkdir -p bin
-	rm -f bin/$(BIN) $(OBJS)
-	$(CC) $(SRC) $(CFLAGS) -o bin/$(BIN) $(LIBS)
+GLFWBASE = -DNKCD=NKC_GLFW $(LIBGLFW)
+
+#---------------
+SOURCES = main.c
+#---------------
+
+CFLAGS = -Wall # -O2
+LDFLAGS = -s -lm
+STRICTFLAGS = -std=c89
+
+COMP = $(CC) $(SOURCES) $(CFLAGS) $(LDFLAGS) $(STRICTFLAGS)
+
+all: nuklear
+
+nuklear:
+	$(COMP) $(GLFWBASE) -DNKC_USE_OPENGL=3 $(LIBGL) $(LIBGLEW) -o easy_nuk
