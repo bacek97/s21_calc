@@ -1,3 +1,0 @@
-sudo apt install xorg-dev
-sudo apt-get install libglew-dev
-sudo apt install glew-utils
