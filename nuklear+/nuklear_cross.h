@@ -33,15 +33,12 @@
 #ifndef NUKLEAR_CROSS_H
 #define NUKLEAR_CROSS_H
 
-#define NKC_SDL 1
+//#define NKC_SDL 1
 #define NKC_GLFW 2
-#define NKC_XLIB 3
-#define NKC_GDIP 4
+//#define NKC_XLIB 3
+//#define NKC_GDIP 4
 
 #define NGL_ES2 20
-
-
-
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
@@ -49,16 +46,14 @@
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_STANDARD_IO
 #if !defined(NKC_DISABLE_DEFAULT_FONT)
-    #define NK_INCLUDE_DEFAULT_FONT
+#define NK_INCLUDE_DEFAULT_FONT
 #endif
 
 #if defined(NKC_IMPLEMENTATION) && !defined(NK_IMPLEMENTATION)
-    #define NK_IMPLEMENTATION
+#define NK_IMPLEMENTATION
 #endif
 
 #include "nuklear.h"
-
-
 
 #ifdef __cplusplus
 extern "C" {
@@ -70,36 +65,35 @@ extern "C" {
  *     struct nk_context *ctx;
  *     int nkcInited;
 */
-struct nkc; 
+struct nkc;
 
 /** 
  * @brief Window mode constants, passed to initialization 
  */
 enum nkc_window_mode {
-    NKC_WIN_NORMAL = 'w', /**< normal window mode, user can resize/maximize */
-    NKC_WIN_MAXIMIZED = 'm', /**< like normal, but starts maximized */
-    NKC_WIN_FIXED = 'x', /**< fixed size mode. User can't resize/maximize */
-    NKC_WIN_FULLSCREEN = 'f', /**< real fullscreen. In almost all frontends changes the screen's resolution */
-    NKC_WIN_FULLSCREEN_DESKTOP = 'd' /**< "virtual" fullscreen. Removes windows decorations, 
+  NKC_WIN_NORMAL = 'w', /**< normal window mode, user can resize/maximize */
+  NKC_WIN_MAXIMIZED = 'm', /**< like normal, but starts maximized */
+  NKC_WIN_FIXED = 'x', /**< fixed size mode. User can't resize/maximize */
+  NKC_WIN_FULLSCREEN =
+  'f', /**< real fullscreen. In almost all frontends changes the screen's resolution */
+  NKC_WIN_FULLSCREEN_DESKTOP = 'd' /**< "virtual" fullscreen. Removes windows decorations,
      * expands window to full size, changes window size */
 };
 #define NKC_INITED 1234  /**< Internal used constant @hideinitializer */
 
-
 #define MAX_VERTEX_MEMORY 512 * 1024 /**< Internal used constant, OpenGL render @hideinitializer */
 #define MAX_ELEMENT_MEMORY 128 * 1024 /**< Internal used constant, OpenGL render @hideinitializer */
 
-
 #if defined(__EMSCRIPTEN__)
-    /* GL ES systems */
-    #undef NKC_OPENGL_VERSION
-    #define NKC_OPENGL_VERSION NGL_ES2
+/* GL ES systems */
+#undef NKC_OPENGL_VERSION
+#define NKC_OPENGL_VERSION NGL_ES2
 #else
-    #if defined(NKC_USE_OPENGL)
-        #define NKC_OPENGL_VERSION NKC_USE_OPENGL
-    #else
-        #define NKC_OPENGL_VERSION 2
-    #endif    
+#if defined(NKC_USE_OPENGL)
+#define NKC_OPENGL_VERSION NKC_USE_OPENGL
+#else
+#define NKC_OPENGL_VERSION 2
+#endif
 #endif
 
 #include <stdio.h>
@@ -107,47 +101,47 @@ enum nkc_window_mode {
 
 /* Events system */
 enum nkc_event_type {
-    NKC_ENONE, /**< No event */
-    NKC_EWINDOW, /**< Window event */
-    NKC_EKEY, /**< Keyboard events */
-    NKC_EQUIT /**< Quit from app event */
+  NKC_ENONE, /**< No event */
+  NKC_EWINDOW, /**< Window event */
+  NKC_EKEY, /**< Keyboard events */
+  NKC_EQUIT /**< Quit from app event */
 };
 
 struct nkc_window_event {
-    enum nkc_event_type type;
-    int param;
+  enum nkc_event_type type;
+  int param;
 };
 
 struct nkc_key_event {
-    enum nkc_event_type type;
-    int code;
-    int mod;
+  enum nkc_event_type type;
+  int code;
+  int mod;
 };
 union nkc_event {
-    enum nkc_event_type type;
-    struct nkc_window_event window; 
-    struct nkc_key_event key;
+  enum nkc_event_type type;
+  struct nkc_window_event window;
+  struct nkc_key_event key;
 };
 /* end Events */
 
 #if defined(NKCD)
-    #if NKCD==NKC_GDIP
-        #include "nkc_frontend/nkc_gdip.h"
-    #elif NKCD==NKC_SDL
-        #include "nkc_frontend/nkc_sdl.h"
-    #elif NKCD==NKC_GLFW
-        #include "nkc_frontend/nkc_glfw.h"
-    #elif NKCD==NKC_XLIB
-        #include "nkc_frontend/nkc_xlib.h"
-    #endif
+#if NKCD == NKC_GDIP
+#include "nkc_frontend/nkc_gdip.h"
+#elif NKCD == NKC_SDL
+#include "nkc_frontend/nkc_sdl.h"
+#elif NKCD == NKC_GLFW
+#include "nkc_frontend/nkc_glfw.h"
+#elif NKCD == NKC_XLIB
+#include "nkc_frontend/nkc_xlib.h"
+#endif
 #else
-    /* if no value defined. Try to choose */
-    #if defined(WIN32) || defined(_WIN32)
-        #include "nkc_frontend/nkc_gdip.h"
-    #else
-        /* SDL if not windows */
-        #include "nkc_frontend/nkc_sdl.h"
-    #endif
+/* if no value defined. Try to choose */
+#if defined(WIN32) || defined(_WIN32)
+#include "nkc_frontend/nkc_gdip.h"
+#else
+    /* SDL if not windows */
+#include "nkc_frontend/nkc_sdl.h"
+#endif
 #endif /* Frontend choose */
 
 
@@ -164,7 +158,7 @@ union nkc_event {
  * @brief Fatal error. Application exit. Die with message. Printf-like
  * @param fmt - format string
  */
-NK_API void* nkc_rdie(const char *fmt, ...);
+NK_API void *nkc_rdie(const char *fmt, ...);
 
 /**
  * @brief Initialize the library, create the operation system window
@@ -176,21 +170,24 @@ NK_API void* nkc_rdie(const char *fmt, ...);
  * @see enum nkc_window_mode
  * @return if error, than returns NULL
  */
-NK_API struct nk_context *nkc_init(struct nkc* nkcHandle, const char* title, 
-                            int width, int height, enum nkc_window_mode windowMode);
+NK_API struct nk_context *nkc_init(struct nkc *nkcHandle,
+                                   const char *title,
+                                   int width,
+                                   int height,
+                                   enum nkc_window_mode windowMode);
 
 /**
  * @brief Poll window's events in a loop
  * @return union nkc_event
  * @see union nkc_event
  */
-NK_API union nkc_event nkc_poll_events(struct nkc* nkcHandle);
+NK_API union nkc_event nkc_poll_events(struct nkc *nkcHandle);
 
 /** @return Returns nkcHandle->ctx */
-NK_API struct nk_context* nkc_get_ctx(struct nkc* nkcHandle);
+NK_API struct nk_context *nkc_get_ctx(struct nkc *nkcHandle);
 
 /** @brief Finalizing */
-NK_API void nkc_shutdown(struct nkc* nkcHandle);
+NK_API void nkc_shutdown(struct nkc *nkcHandle);
 
 /** @} */ /* end of init group */
 
@@ -200,11 +197,11 @@ NK_API void nkc_shutdown(struct nkc* nkcHandle);
  *  @brief You can render GUI and BG separately.
  *  @{
  */
-NK_API void nkc_render_bg(struct nkc* nkcHandle, struct nk_color bgColor);
-NK_API void nkc_render_gui(struct nkc* nkcHandle);
+NK_API void nkc_render_bg(struct nkc *nkcHandle, struct nk_color bgColor);
+NK_API void nkc_render_gui(struct nkc *nkcHandle);
 
 /** Just calls nkc_render_bg than nkc_render_gui */
-NK_API void nkc_render(struct nkc* nkcHandle, struct nk_color bgColor);
+NK_API void nkc_render(struct nkc *nkcHandle, struct nk_color bgColor);
 /** @} */ /* end of render group */
 
 
@@ -216,7 +213,8 @@ NK_API void nkc_render(struct nkc* nkcHandle, struct nk_color bgColor);
  */
 
 /** Differs from nk_style_set_font only on checking font for NULL */
-NK_API void nkc_style_set_font(struct nkc* nkcHandle, const struct nk_user_font* font);
+NK_API void nkc_style_set_font(struct nkc *nkcHandle,
+                               const struct nk_user_font *font);
 
 /**
  * @brief Load font from TTF-file from disk
@@ -224,10 +222,15 @@ NK_API void nkc_style_set_font(struct nkc* nkcHandle, const struct nk_user_font*
  * @param symbolsRange - will be given directly yo Nuklear
  * @return NULL if error
  */
-NK_API struct nk_user_font* nkc_load_font_file(struct nkc* nkcHandle, const char* filename, float size, 
-                              const nk_rune *symbolsRange);
-NK_API struct nk_user_font* nkc_load_font_memory(struct nkc* nkcHandle, const void* membuf, int membufSize, 
-                              float size, const nk_rune *symbolsRange);
+NK_API struct nk_user_font *nkc_load_font_file(struct nkc *nkcHandle,
+                                               const char *filename,
+                                               float size,
+                                               const nk_rune *symbolsRange);
+NK_API struct nk_user_font *nkc_load_font_memory(struct nkc *nkcHandle,
+                                                 const void *membuf,
+                                                 int membufSize,
+                                                 float size,
+                                                 const nk_rune *symbolsRange);
 
 /**
  * @brief Converts keyboard code to it's latin character (if have)
@@ -244,9 +247,12 @@ NK_API char nkc_get_key_char(int code);
  *  @{
  */
 #if !defined(NKC_DISABLE_IMAGES)
-NK_API struct nk_image nkc_load_image_file(struct nkc* nkcHandle, const char* filename);
-NK_API struct nk_image nkc_load_image_memory(struct nkc* nkcHandle, const void* membuf, int membufSize);
-NK_API void nkc_image_free(struct nk_image* img);
+NK_API struct nk_image nkc_load_image_file(struct nkc *nkcHandle,
+                                           const char *filename);
+NK_API struct nk_image nkc_load_image_memory(struct nkc *nkcHandle,
+                                             const void *membuf,
+                                             int membufSize);
+NK_API void nkc_image_free(struct nk_image *img);
 #endif /* NKC_DISABLE_IMAGES */
 
 /**
@@ -255,7 +261,7 @@ NK_API void nkc_image_free(struct nk_image* img);
  * @param height - desktop height, will be 0 if error
  * @return nk_true if correct and nk_false if something wrong
  */
-NK_API int nkc_get_desktop_size(struct nkc* nkcHandle, int* width, int* height);
+NK_API int nkc_get_desktop_size(struct nkc *nkcHandle, int *width, int *height);
 /** @} */ /* end of image group */
 
 
@@ -264,16 +270,17 @@ NK_API int nkc_get_desktop_size(struct nkc* nkcHandle, int* width, int* height);
  *  @brief Required for Emscripten
  *  @{
  */
- 
+
 /**
  * @brief Starts the 'infinite' main loop. Required for Emscipten only.
  * @param mainLoopFunc - pointer to the function, that will be called each loop iteration
  * @param loopArg - pointer to your data structer, that will be passed to mainLoopFunc function
  */
-NK_API void nkc_set_main_loop(struct nkc* nkcHandle,
-            void (*mainLoopFunc)(void* loopArg), void* loopArg);
+NK_API void nkc_set_main_loop(struct nkc *nkcHandle,
+                              void (*mainLoopFunc)(void *loopArg),
+                              void *loopArg);
 /** Exit from main loop */
-NK_API void nkc_stop_main_loop(struct nkc* nkcHandle);
+NK_API void nkc_stop_main_loop(struct nkc *nkcHandle);
 /** @} */ /* end of mainloop group */
 
 
@@ -287,24 +294,23 @@ NK_API void nkc_stop_main_loop(struct nkc* nkcHandle);
 #include "nkc_frontend/helpers/nkc_file.h"
 
 /** Checks if file exists on disk. nk_true if so. */
-int nkc_file_exists(const char* filename);
+int nkc_file_exists(const char *filename);
 
 /** Returns file size in bytes. */
-size_t nkc_file_size(const char* filename);
+size_t nkc_file_size(const char *filename);
 
 /**
  * @brief Returns file size in bytes.
  * @param f - pointer to std FILE
  * @return File size in bytes
  */
-size_t nkc_stdfile_size(FILE* f);
-
+size_t nkc_stdfile_size(FILE *f);
 
 /**
  * @brief Mounts local storage folder for writing. Useful for Emscripten only
  * @param folder - path to the folder. "/save" for example
  */
-void nkc_mount_write(const char* folder);
+void nkc_mount_write(const char *folder);
 
 /** Reads local storage to memory. Usually call it one time only, after mount. Useful for Emscripten only. */
 void nkc_file_pre_read();
@@ -317,30 +323,31 @@ void nkc_file_post_write();
 
 
 #if defined(NKC_IMPLEMENTATION)
-NK_API void nkc_render(struct nkc* nkcHandle, struct nk_color bgColor){
-    nkc_render_bg(nkcHandle, bgColor);
-    nkc_render_gui(nkcHandle);
+NK_API void nkc_render(struct nkc *nkcHandle, struct nk_color bgColor) {
+  nkc_render_bg(nkcHandle, bgColor);
+  nkc_render_gui(nkcHandle);
 }
 
-NK_API struct nk_context* nkc_get_ctx(struct nkc* nkcHandle){
-    return nkcHandle->ctx;
+NK_API struct nk_context *nkc_get_ctx(struct nkc *nkcHandle) {
+  return nkcHandle->ctx;
 }
 
-NK_API void nkc_style_set_font(struct nkc* nkcHandle, const struct nk_user_font* font){
-    if(font) nk_style_set_font(nkcHandle->ctx, font);
+NK_API void nkc_style_set_font(struct nkc *nkcHandle,
+                               const struct nk_user_font *font) {
+  if (font) nk_style_set_font(nkcHandle->ctx, font);
 }
 
 #if !defined(__EMSCRIPTEN__)
-NK_API void nkc_set_main_loop(struct nkc* nkcHandle,
-            void (*mainLoopFunc)(void* loopArg), void* loopArg)
-{
-    nkcHandle->keepRunning = nk_true;
-    while (nkcHandle->keepRunning)
-        mainLoopFunc(loopArg);
+NK_API void nkc_set_main_loop(struct nkc *nkcHandle,
+                              void (*mainLoopFunc)(void *loopArg),
+                              void *loopArg) {
+  nkcHandle->keepRunning = nk_true;
+  while (nkcHandle->keepRunning)
+    mainLoopFunc(loopArg);
 }
 
-NK_API void nkc_stop_main_loop(struct nkc* nkcHandle){
-    nkcHandle->keepRunning = nk_false;
+NK_API void nkc_stop_main_loop(struct nkc *nkcHandle) {
+  nkcHandle->keepRunning = nk_false;
 }
 #endif /* __EMSCRIPTEN__ */
 
