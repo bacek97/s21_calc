@@ -25,15 +25,17 @@ void mainLoop(void *loopArg) {
   if ((e.type == NKC_EWINDOW) && (e.window.param == NKC_EQUIT)) {
     nkc_stop_main_loop(myapp->nkcHandle);
   }
+#ifdef NK_GLFW_GL3_MOUSE_GRABBING
   struct nk_vec2 mpos = myapp->nkcHandle->ctx->input.mouse.pos;
   if (mpos.x && mpos.y){
     printf("%f\n",mpos.x);
   }
-
+#endif
   /* Nuklear GUI code */
 
   if (nk_begin(ctx, "Calculator", nk_rect(10, 10, 180, 250),
-               NK_WINDOW_DYNAMIC|NK_WINDOW_BORDER | NK_WINDOW_MOVABLE |NK_WINDOW_SCALABLE)) {
+               NK_WINDOW_DYNAMIC | NK_WINDOW_BORDER | NK_WINDOW_MOVABLE
+                   | NK_WINDOW_SCALABLE)) {
     static int set = 0, prev = 0, op = 0;
     static const char numbers[] = "789456123";
     static const char ops[] = "+-*/";
@@ -102,14 +104,27 @@ void mainLoop(void *loopArg) {
   }
   nk_end(ctx);
 
-
-  nk_end(ctx);
   if (nk_begin(ctx,
                "Mywidget",
                nk_rect(0, 0, 300, 300),
                NK_WINDOW_SCALABLE | NK_WINDOW_BORDER | NK_WINDOW_MINIMIZABLE
                    | NK_WINDOW_MOVABLE)) {
+    //nk_window_set_position(ctx,mpos);
+    int len;
+    char buffer[256];
+    float padding = 25;
 
+    nk_layout_row_dynamic(ctx, nk_window_get_height(ctx), 1);
+    if (nk_group_begin(ctx, "group", 0)) {
+      nk_layout_row_template_begin(ctx, 30);
+
+      nk_layout_row_template_push_dynamic(ctx);
+      nk_layout_row_template_end(ctx);
+
+      nk_edit_string(ctx, NK_EDIT_SIMPLE, buffer, &len, 255, nk_filter_float);
+      nk_group_end(ctx);
+    }
+    //nk_layout_row_end(ctx);
   }
   nk_end(ctx);
   /* End Nuklear GUI */
