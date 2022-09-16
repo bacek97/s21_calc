@@ -44,7 +44,7 @@ glew:
 	cd glew-* && $(MAKE)
 
 glfw:
-	cd glfw-* && cmake -S . -B ./build && cd ./build && $(MAKE)
+	cd glfw-* && cmake -S . -B ./build && cd ./build && $(MAKE) glfw
 
 clean:
 	-cd glew-* && $(MAKE) clean
