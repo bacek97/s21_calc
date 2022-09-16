@@ -81,7 +81,14 @@ static const int nkc_suported_keys[] = {
     NKC_KEY_F9,
     NKC_KEY_F10,
     NKC_KEY_F11,
-    NKC_KEY_F12
+    NKC_KEY_F12,
+    NKC_KEY_DECIMAL,
+    NKC_KEY_DIVIDE,
+    NKC_KEY_MULTIPLY,
+    NKC_KEY_SUBTRACT,
+    NKC_KEY_ADD,
+    NKC_KEY_ENTER,
+    NKC_KEY_EQUAL
 };
 
 #endif /* NKC_KEYBOARD_H */

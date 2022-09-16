@@ -10,57 +10,55 @@
 #ifndef NKC_GLFW_H
 #define NKC_GLFW_H
 
-    
-    #define GLFW_INCLUDE_GLEXT
-    #define GL_GLEXT_PROTOTYPES
-    #if defined(NKC_USE_OPENGL) && (NKC_USE_OPENGL == 3)
-        #include <GL/glew.h>
-    #endif
-    #include <GLFW/glfw3.h>
-    #include <string.h>
-    #include <stdarg.h>
+#define GLFW_INCLUDE_GLEXT
+#define GL_GLEXT_PROTOTYPES
+#if defined(NKC_USE_OPENGL) && (NKC_USE_OPENGL == 3)
+#include <GL/glew.h>
+#endif
+#include <GLFW/glfw3.h>
+#include <string.h>
+#include <stdarg.h>
 
+struct nkc {
+  int nkcInited;
+  struct nk_context *ctx;
+  int keepRunning;
 
-    struct nkc {
-        int nkcInited;
-        struct nk_context *ctx;
-        int keepRunning;
+  GLFWwindow *window;
+  int width;
+  int height;
+};
 
-        GLFWwindow *window;
-        int width;
-        int height;
-    };
+#if defined(__EMSCRIPTEN__)
+#undef NKC_USE_OPENGL
+#define NKC_USE_OPENGL 3
 
-    #if defined(__EMSCRIPTEN__)
-        #undef NKC_USE_OPENGL
-        #define NKC_USE_OPENGL 3
-        
-        #if defined(NKC_IMPLEMENTATION)
-            #define NK_GLFW_GL3_IMPLEMENTATION
-        #endif
-        
-        #include "../nuklear_drivers/nuklear_glfw_emscripten.h"
-    #else
-        #if defined(NKC_USE_OPENGL) && (NKC_USE_OPENGL > 2)
-            #if defined(NKC_IMPLEMENTATION)
-                #define NK_GLFW_GL3_IMPLEMENTATION
-            #endif
-            
-            #include "../nuklear_drivers/nuklear_glfw_gl3.h"
-        #else
-            #if defined(NKC_IMPLEMENTATION)
-                #define NK_GLFW_GL2_IMPLEMENTATION
-            #endif
-            #include "../nuklear_drivers/nuklear_glfw_gl2.h"
-        #endif
-        
-        #if defined(NKC_USE_OPENGL)
-            #define NKC_OPENGL_VERSION NKC_USE_OPENGL
-        #else
-            #define NKC_OPENGL_VERSION 2
-        #endif
-    #endif
-    
+#if defined(NKC_IMPLEMENTATION)
+#define NK_GLFW_GL3_IMPLEMENTATION
+#endif
+
+#include "../nuklear_drivers/nuklear_glfw_emscripten.h"
+#else
+#if defined(NKC_USE_OPENGL) && (NKC_USE_OPENGL > 2)
+#if defined(NKC_IMPLEMENTATION)
+#define NK_GLFW_GL3_IMPLEMENTATION
+#endif
+
+#include "../nuklear_drivers/nuklear_glfw_gl3.h"
+#else
+#if defined(NKC_IMPLEMENTATION)
+#define NK_GLFW_GL2_IMPLEMENTATION
+#endif
+#include "../nuklear_drivers/nuklear_glfw_gl2.h"
+#endif
+
+#if defined(NKC_USE_OPENGL)
+#define NKC_OPENGL_VERSION NKC_USE_OPENGL
+#else
+#define NKC_OPENGL_VERSION 2
+#endif
+#endif
+
 
 /* Constants */
 #define NKC_KEY_ESCAPE GLFW_KEY_ESCAPE
@@ -72,7 +70,7 @@
 #define NKC_KEY_SHIFT GLFW_KEY_LEFT_SHIFT
 #define NKC_KEY_ALT GLFW_KEY_LEFT_ALT
 #define NKC_KEY_WIN GLFW_KEY_LEFT_SUPER
-#define NKC_KEY_LEFTBRACKET GLFW_KEY_LEFT_BRACKET 
+#define NKC_KEY_LEFTBRACKET GLFW_KEY_LEFT_BRACKET
 #define NKC_KEY_RIGHTBRACKET GLFW_KEY_RIGHT_BRACKET
 #define NKC_KEY_SEMICOLON GLFW_KEY_SEMICOLON
 #define NKC_KEY_APOSTROPHE GLFW_KEY_APOSTROPHE
@@ -134,88 +132,99 @@
 #define NKC_KEY_F10 GLFW_KEY_F10
 #define NKC_KEY_F11 GLFW_KEY_F11
 #define NKC_KEY_F12 GLFW_KEY_F12
+#define NKC_KEY_DECIMAL GLFW_KEY_KP_DECIMAL
+#define NKC_KEY_DIVIDE GLFW_KEY_KP_DIVIDE
+#define NKC_KEY_MULTIPLY GLFW_KEY_KP_MULTIPLY
+#define NKC_KEY_SUBTRACT GLFW_KEY_KP_SUBTRACT
+#define NKC_KEY_ADD GLFW_KEY_KP_ADD
+#define NKC_KEY_ENTER GLFW_KEY_KP_ENTER
+#define NKC_KEY_EQUAL GLFW_KEY_KP_EQUAL
 
-    #include "helpers/nkc_emscripten.h"
-
+#include "helpers/nkc_emscripten.h"
 
 #if defined(NKC_IMPLEMENTATION)
-static void nkc_glfw_error_callback(int e, const char *d)
-{printf("Error %d: %s\n", e, d);}
-
-
-void nkc_fullscreen_enter(struct nkc* nkcHandle);
-NK_API void* nkc_rdie(const char *fmt, ...);
-
-NK_API struct nk_context *nkc_init(struct nkc* nkcHandle, const char* title, 
-                        int width, int height, enum nkc_window_mode windowMode)
-{
-    struct nk_font_atlas *atlas;
-    GLFWmonitor* monitor = NULL;
-    int winWidth = width;
-    int winHeight = height;
-    /* GLFW */
-    glfwSetErrorCallback(nkc_glfw_error_callback);
-    if (!glfwInit()) return nkc_rdie("[GFLW] failed to init!");
-    #if NKC_OPENGL_VERSION > 2
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, NKC_OPENGL_VERSION);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, NKC_OPENGL_VERSION);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        #ifdef __APPLE__
-            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-        #endif
-    #endif
-    #if !defined(__EMSCRIPTEN__)
-    if( (windowMode == NKC_WIN_FULLSCREEN) ||
-        (windowMode == NKC_WIN_FULLSCREEN_DESKTOP ) ){
-            monitor = glfwGetPrimaryMonitor();
-        }
-    if( windowMode == NKC_WIN_FULLSCREEN_DESKTOP ){
-        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-        glfwWindowHint(GLFW_RED_BITS, mode->redBits);
-        glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
-        glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
-        glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
-        winWidth = mode->width;
-        winHeight = mode->height;
-    }
-    #endif
-
-    nkcHandle->window = glfwCreateWindow(winWidth, winHeight, title, monitor, NULL);
-    if( !nkcHandle->window ) return nkc_rdie("[GLFW] Window was not created!");
-    if( windowMode == NKC_WIN_FIXED ) 
-        glfwSetWindowSizeLimits(nkcHandle->window, width, height, width, height);
-        
-    glfwMakeContextCurrent(nkcHandle->window);
-    /*glfwGetWindowSize(nkcHandle->window, &nkcHandle->width, &nkcHandle->height);
-    nkcHandle->width = width;
-    nkcHandle->height = height;
-    nkcHandle->width = winWidth;
-    nkcHandle->height = winHeight;
-
-    glViewport(0, 0, nkcHandle->width, nkcHandle->height);*/
-    #if (NKC_OPENGL_VERSION == 3) && !defined(__EMSCRIPTEN__)
-        glewExperimental = 1;
-        if (glewInit() != GLEW_OK) return nkc_rdie("[GLFW] Failed to setup GLEW");
-    #endif
-    
-    nkcHandle->ctx = nk_glfw3_init(nkcHandle->window, NK_GLFW3_INSTALL_CALLBACKS);
-    
-    nk_glfw3_font_stash_begin(&atlas);
-    nk_glfw3_font_stash_end();
-    
-    #if defined(__EMSCRIPTEN__)
-    if( windowMode == NKC_WIN_FULLSCREEN ) nkc_fullscreen_enter(nkcHandle);
-    #endif
-    
-    glEnable(GL_TEXTURE_2D);
-    glfwSwapInterval(1);
-    nkcHandle->nkcInited = NKC_INITED;
-    return nkcHandle->ctx;
+static void nkc_glfw_error_callback(int e, const char *d) {
+  printf("Error %d: %s\n",
+         e,
+         d);
 }
 
-NK_API void nkc_shutdown(struct nkc* nkcHandle){
-    nk_glfw3_shutdown();
-    glfwTerminate();
+void nkc_fullscreen_enter(struct nkc *nkcHandle);
+NK_API void *nkc_rdie(const char *fmt, ...);
+
+NK_API struct nk_context *nkc_init(struct nkc *nkcHandle,
+                                   const char *title,
+                                   int width,
+                                   int height,
+                                   enum nkc_window_mode windowMode) {
+  struct nk_font_atlas *atlas;
+  GLFWmonitor *monitor = NULL;
+  int winWidth = width;
+  int winHeight = height;
+  /* GLFW */
+  glfwSetErrorCallback(nkc_glfw_error_callback);
+  if (!glfwInit()) return nkc_rdie("[GFLW] failed to init!");
+#if NKC_OPENGL_VERSION > 2
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, NKC_OPENGL_VERSION);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, NKC_OPENGL_VERSION);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef __APPLE__
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+#endif
+#if !defined(__EMSCRIPTEN__)
+  if ((windowMode == NKC_WIN_FULLSCREEN) ||
+      (windowMode == NKC_WIN_FULLSCREEN_DESKTOP)) {
+    monitor = glfwGetPrimaryMonitor();
+  }
+  if (windowMode == NKC_WIN_FULLSCREEN_DESKTOP) {
+    const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+    glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+    glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+    glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+    glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+    winWidth = mode->width;
+    winHeight = mode->height;
+  }
+#endif
+
+  nkcHandle->window =
+      glfwCreateWindow(winWidth, winHeight, title, monitor, NULL);
+  if (!nkcHandle->window) return nkc_rdie("[GLFW] Window was not created!");
+  if (windowMode == NKC_WIN_FIXED)
+    glfwSetWindowSizeLimits(nkcHandle->window, width, height, width, height);
+
+  glfwMakeContextCurrent(nkcHandle->window);
+  /*glfwGetWindowSize(nkcHandle->window, &nkcHandle->width, &nkcHandle->height);
+  nkcHandle->width = width;
+  nkcHandle->height = height;
+  nkcHandle->width = winWidth;
+  nkcHandle->height = winHeight;
+
+  glViewport(0, 0, nkcHandle->width, nkcHandle->height);*/
+#if (NKC_OPENGL_VERSION == 3) && !defined(__EMSCRIPTEN__)
+  glewExperimental = 1;
+  if (glewInit() != GLEW_OK) return nkc_rdie("[GLFW] Failed to setup GLEW");
+#endif
+
+  nkcHandle->ctx = nk_glfw3_init(nkcHandle->window, NK_GLFW3_INSTALL_CALLBACKS);
+
+  nk_glfw3_font_stash_begin(&atlas);
+  nk_glfw3_font_stash_end();
+
+#if defined(__EMSCRIPTEN__)
+  if( windowMode == NKC_WIN_FULLSCREEN ) nkc_fullscreen_enter(nkcHandle);
+#endif
+
+  glEnable(GL_TEXTURE_2D);
+  glfwSwapInterval(1);
+  nkcHandle->nkcInited = NKC_INITED;
+  return nkcHandle->ctx;
+}
+
+NK_API void nkc_shutdown(struct nkc *nkcHandle) {
+  nk_glfw3_shutdown();
+  glfwTerminate();
 }
 
 
@@ -231,106 +240,119 @@ NK_API void nkc_shutdown(struct nkc* nkcHandle){
 #endif
 }*/
 
-NK_API union nkc_event nkc_poll_events(struct nkc* nkcHandle){
-    static char keyOnce[GLFW_KEY_LAST + 1];
-    #define glfwGetKeyOnce(WINDOW, KEY) \
+NK_API union nkc_event nkc_poll_events(struct nkc *nkcHandle) {
+  static char keyOnce[GLFW_KEY_LAST + 1];
+#define glfwGetKeyOnce(WINDOW, KEY) \
         (glfwGetKey(WINDOW, KEY) ? \
         (keyOnce[KEY] ? nk_false : (keyOnce[KEY] = nk_true)) : \
         (keyOnce[KEY] = nk_false))
-    #include "helpers/nkc_keyboard.h"
-    int i;
-    union nkc_event ne;
-    ne.type = NKC_ENONE;
-    glfwPollEvents();
-    nk_glfw3_new_frame();
-    if( glfwWindowShouldClose(nkcHandle->window) ){
-        ne.type = NKC_EWINDOW;
-        ne.window.param = NKC_EQUIT;
+#include "helpers/nkc_keyboard.h"
+  int i;
+  union nkc_event ne;
+  ne.type = NKC_ENONE;
+  glfwPollEvents();
+  nk_glfw3_new_frame();
+  if (glfwWindowShouldClose(nkcHandle->window)) {
+    ne.type = NKC_EWINDOW;
+    ne.window.param = NKC_EQUIT;
+  }
+  for (i = 0; i < sizeof(nkc_suported_keys) / sizeof(nkc_suported_keys[0]);
+       i++) {
+    int key = nkc_suported_keys[i];
+    // TODO задефайнить что-то вроде key_hold
+    if (glfwGetKeyOnce(nkcHandle->window, key) == GLFW_PRESS) {
+      ne.type = NKC_EKEY;
+      ne.key.code = key;
     }
-    for(i=0; i<sizeof(nkc_suported_keys)/sizeof(nkc_suported_keys[0]); i++){
-        int key = nkc_suported_keys[i];
-        if( glfwGetKeyOnce(nkcHandle->window, key) == GLFW_PRESS ){
-            ne.type = NKC_EKEY;
-            ne.key.code = key;
-        }
-    }
-    return ne;
+  }
+  return ne;
 }
 
-NK_API void nkc_render_bg(struct nkc* nkcHandle, struct nk_color bgColor){
-    float bg[4];
-    nk_color_fv(bg, bgColor);
-    /*glfwGetWindowSize(nkcHandle->window, &(nkcHandle->width), &(nkcHandle->height) );
-    glViewport(0, 0, nkcHandle->width, nkcHandle->height);
-    printf("Viewport: %dx%d\n", nkcHandle->width, nkcHandle->height);*/
-    glClear(GL_COLOR_BUFFER_BIT);
-    glClearColor(bg[0], bg[1], bg[2], bg[3]);
+NK_API void nkc_render_bg(struct nkc *nkcHandle, struct nk_color bgColor) {
+  float bg[4];
+  nk_color_fv(bg, bgColor);
+  /*glfwGetWindowSize(nkcHandle->window, &(nkcHandle->width), &(nkcHandle->height) );
+  glViewport(0, 0, nkcHandle->width, nkcHandle->height);
+  printf("Viewport: %dx%d\n", nkcHandle->width, nkcHandle->height);*/
+  glClear(GL_COLOR_BUFFER_BIT);
+  glClearColor(bg[0], bg[1], bg[2], bg[3]);
 }
 
-NK_API void nkc_render_gui(struct nkc* nkcHandle){
-    /* IMPORTANT: `nk_glfw_render` modifies some global OpenGL state
-     * with blending, scissor, face culling, depth test and viewport and
-     * defaults everything back into a default state.
-     * Make sure to either a.) save and restore or b.) reset your own state after
-     * rendering the UI. */
-    #if NKC_USE_OPENGL > 2
-        nk_glfw3_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
-    #else
-        nk_glfw3_render(NK_ANTI_ALIASING_ON);
-    #endif
-    glfwSwapBuffers(nkcHandle->window);
+NK_API void nkc_render_gui(struct nkc *nkcHandle) {
+  /* IMPORTANT: `nk_glfw_render` modifies some global OpenGL state
+   * with blending, scissor, face culling, depth test and viewport and
+   * defaults everything back into a default state.
+   * Make sure to either a.) save and restore or b.) reset your own state after
+   * rendering the UI. */
+#if NKC_USE_OPENGL > 2
+  nk_glfw3_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
+#else
+  nk_glfw3_render(NK_ANTI_ALIASING_ON);
+#endif
+  glfwSwapBuffers(nkcHandle->window);
 }
-
-
 
 #if !defined(__EMSCRIPTEN__)
 
-NK_API void* nkc_rdie(const char *fmt, ...){
-    va_list ap;
-    va_start(ap, fmt);
-    vfprintf(stderr, fmt, ap);
-    va_end(ap);
-    fputs("\n", stderr);
-    return NULL;
+NK_API void *nkc_rdie(const char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+  vfprintf(stderr, fmt, ap);
+  va_end(ap);
+  fputs("\n", stderr);
+  return NULL;
 }
 
-NK_API int nkc_get_desktop_size(struct nkc* nkcHandle, int* width, int* height){
-    const GLFWvidmode* mode;
-    if( nkcHandle->nkcInited != NKC_INITED ) glfwInit();
-    mode = glfwGetVideoMode( glfwGetPrimaryMonitor() );
-    if( mode == NULL ) return 0;
-    *width = mode->width;
-    *height = mode->height;
-    return 1;
+NK_API int nkc_get_desktop_size(struct nkc *nkcHandle,
+                                int *width,
+                                int *height) {
+  const GLFWvidmode *mode;
+  if (nkcHandle->nkcInited != NKC_INITED) glfwInit();
+  mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+  if (mode == NULL) return 0;
+  *width = mode->width;
+  *height = mode->height;
+  return 1;
 }
 
-NK_API char nkc_get_key_char(int code){
-    const char* name = glfwGetKeyName(code, 0);
-    if( name == NULL ) return 0;
-    if( strlen(name) == 1 ){
-        if( (name[0]>='A') && (name[0]<='Z') ){
-            return name[0] - 'A' + 'a'; /* 'a' for NKC_KEY_A */
-        } else return name[0];
-    }
-    return 0;
+NK_API char nkc_get_key_char(int code) {
+  const char *name = glfwGetKeyName(code, 0);
+  if (name == NULL) return 0;
+  if (strlen(name) == 1) {
+    if ((name[0] >= 'A') && (name[0] <= 'Z')) {
+      return name[0] - 'A' + 'a'; /* 'a' for NKC_KEY_A */
+    } else return name[0];
+  }
+  return 0;
 }
 
-int nkc_is_fullscreen(struct nkc* g){
-    return !!glfwGetWindowMonitor(g->window);
+int nkc_is_fullscreen(struct nkc *g) {
+  return !!glfwGetWindowMonitor(g->window);
 }
 
-void nkc_fullscreen_exit(struct nkc* g){
-    glfwSetWindowMonitor(g->window, NULL, 0, 0, g->width, g->height, GLFW_DONT_CARE);
+void nkc_fullscreen_exit(struct nkc *g) {
+  glfwSetWindowMonitor(g->window,
+                       NULL,
+                       0,
+                       0,
+                       g->width,
+                       g->height,
+                       GLFW_DONT_CARE);
 }
 
-void nkc_fullscreen_enter(struct nkc* g){
-    /*glfwGetWindowPos(g->window, &g->window_xpos, &g->window_ypos);*/
-    glfwGetWindowSize(g->window, &g->width, &g->height);
-    glfwSetWindowMonitor(g->window, glfwGetPrimaryMonitor(), 0, 0, g->width, g->height, GLFW_DONT_CARE);
+void nkc_fullscreen_enter(struct nkc *g) {
+  /*glfwGetWindowPos(g->window, &g->window_xpos, &g->window_ypos);*/
+  glfwGetWindowSize(g->window, &g->width, &g->height);
+  glfwSetWindowMonitor(g->window,
+                       glfwGetPrimaryMonitor(),
+                       0,
+                       0,
+                       g->width,
+                       g->height,
+                       GLFW_DONT_CARE);
 }
 
 #endif /* EMSCRIPTEN */
-
 
 #include "helpers/nkc_stb_image.h"
 #include "helpers/nkc_font_stash.h"
