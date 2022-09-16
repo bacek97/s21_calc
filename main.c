@@ -2,7 +2,7 @@
 #include "./nuklear+/nuklear_cross.h"
 //#include "./nuklear+/nuklear.h"
 //#include "GL/glxew.h"
-#include <stdio.h>
+//#include <stdio.h>
 
 enum radioOptions {
   EASY,
@@ -15,9 +15,10 @@ struct my_nkc_app {
   /* some user data */
   float value;
   enum radioOptions op;
+  struct nk_colorf cb_color;
 };
-
 void mainLoop(void *loopArg) {
+
   struct my_nkc_app *myapp = (struct my_nkc_app *) loopArg;
   struct nk_context *ctx = nkc_get_ctx(myapp->nkcHandle);
 
@@ -25,6 +26,11 @@ void mainLoop(void *loopArg) {
   if ((e.type == NKC_EWINDOW) && (e.window.param == NKC_EQUIT)) {
     nkc_stop_main_loop(myapp->nkcHandle);
   }
+
+  int x;
+  int y;
+  glfwGetWindowSize(myapp->nkcHandle->window, &x, &y);
+
 #ifdef NK_GLFW_GL3_MOUSE_GRABBING
   struct nk_vec2 mpos = myapp->nkcHandle->ctx->input.mouse.pos;
   if (mpos.x && mpos.y){
@@ -33,9 +39,9 @@ void mainLoop(void *loopArg) {
 #endif
   /* Nuklear GUI code */
 
-  if (nk_begin(ctx, "Calculator", nk_rect(10, 10, 180, 250),
-               NK_WINDOW_DYNAMIC | NK_WINDOW_BORDER | NK_WINDOW_MOVABLE
-                   | NK_WINDOW_SCALABLE)) {
+  if (nk_begin(ctx, "Calculator", nk_rect(0, 0, x, y),
+               NK_WINDOW_BORDER
+  )) {
     static int set = 0, prev = 0, op = 0;
     static const char numbers[] = "789456123";
     static const char ops[] = "+-*/";
@@ -43,18 +49,21 @@ void mainLoop(void *loopArg) {
     static double *current = &a;
 
     size_t i = 0;
+    float w = nk_window_get_width(ctx);
+    float h = nk_window_get_height(ctx);
+
     int solve = 0;
     {
       int len;
       char buffer[256];
-      nk_layout_row_dynamic(ctx, 35, 1);
+      nk_layout_row_dynamic(ctx, h / 5 - 20, 1);
       len = snprintf(buffer, 256, "%.2f", *current);
       nk_edit_string(ctx, NK_EDIT_SIMPLE, buffer, &len, 255, nk_filter_float);
       buffer[len] = 0;
       *current = atof(buffer);
     }
 
-    nk_layout_row_dynamic(ctx, 35, 4);
+    nk_layout_row_dynamic(ctx, h / 5 - 20, 4);
 
     for (i = 0; i < 16; ++i) {
       if (i >= 12 && i < 15) {
@@ -91,6 +100,54 @@ void mainLoop(void *loopArg) {
         set = 1;
       }
     }
+
+    if (e.type == NKC_EKEY) {
+
+      const int scancode = glfwGetKeyScancode(e.key.code);
+      printf("%d\n", scancode);
+      printf("%d\n", e.key.code);
+      //printf("%d\n", e.key.mod);
+      //const char *name = glfwGetKeyName(e.key.code, 0);
+      //puts(name);
+      switch (e.key.code) {
+        default:break;
+        case NKC_KEY_0:printf("%c\n", nkc_get_key_char(e.key.code));
+          break;
+        case NKC_KEY_1:printf("%c\n", nkc_get_key_char(e.key.code));
+          break;
+        case NKC_KEY_2:printf("%c\n", nkc_get_key_char(e.key.code));
+          break;
+        case NKC_KEY_3:printf("%c\n", nkc_get_key_char(e.key.code));
+          break;
+        case NKC_KEY_4:printf("%c\n", nkc_get_key_char(e.key.code));
+          break;
+        case NKC_KEY_5:printf("%c\n", nkc_get_key_char(e.key.code));
+          break;
+        case NKC_KEY_6:printf("%c\n", nkc_get_key_char(e.key.code));
+          break;
+        case NKC_KEY_7:printf("%c\n", nkc_get_key_char(e.key.code));
+          break;
+        case NKC_KEY_8:printf("%c\n", nkc_get_key_char(e.key.code));
+          break;
+        case NKC_KEY_9:printf("%c\n", nkc_get_key_char(e.key.code));
+          break;
+        case NKC_KEY_DELETE:printf("%c\n", 'c');
+          break;
+        case NKC_KEY_E:printf("%c\n", '=');
+          break;
+        case NKC_KEY_S:printf("%c\n", '-');
+          break;
+        case NKC_KEY_M:printf("%c\n", '*');
+          break;
+        case NKC_KEY_A:printf("%c\n",     '+');
+          break;
+        case NKC_KEY_D:printf("%c\n",  '/');
+          break;
+        case NKC_KEY_BACKSPACE:printf("%c\n",  'd');
+          break;
+      }
+    }
+
     if (solve) {
       if (prev == '+') a = a + b;
       if (prev == '-') a = a - b;
@@ -103,34 +160,12 @@ void mainLoop(void *loopArg) {
     }
   }
   nk_end(ctx);
+/* End Nuklear GUI */
 
-  if (nk_begin(ctx,
-               "Mywidget",
-               nk_rect(0, 0, 300, 300),
-               NK_WINDOW_SCALABLE | NK_WINDOW_BORDER | NK_WINDOW_MINIMIZABLE
-                   | NK_WINDOW_MOVABLE)) {
-    //nk_window_set_position(ctx,mpos);
-    int len;
-    char buffer[256];
-    float padding = 25;
-
-    nk_layout_row_dynamic(ctx, nk_window_get_height(ctx), 1);
-    if (nk_group_begin(ctx, "group", 0)) {
-      nk_layout_row_template_begin(ctx, 30);
-
-      nk_layout_row_template_push_dynamic(ctx);
-      nk_layout_row_template_end(ctx);
-
-      nk_edit_string(ctx, NK_EDIT_SIMPLE, buffer, &len, 255, nk_filter_float);
-      nk_group_end(ctx);
-    }
-    //nk_layout_row_end(ctx);
-  }
-  nk_end(ctx);
-  /* End Nuklear GUI */
-
-  nkc_render(myapp->nkcHandle, nk_rgb(40, 40, 40));
+  nkc_render(myapp->nkcHandle, nk_rgb(0, 0, 0));
 }
+
+
 
 int main() {
   struct my_nkc_app myapp;
