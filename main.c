@@ -9,7 +9,7 @@ struct my_nkc_app {
   /*data */
   char input[256];
   size_t input_size;
-  size_t current_input_index;
+  int current_input_index;
 };
 void mainLoop(void *loopArg) {
 
@@ -153,7 +153,9 @@ void mainLoop(void *loopArg) {
 
     if (e.type == NKC_EKEY) {
       switch (e.key.code) {
-        default:printf("%d\n",e.key.code);
+        default:
+          printf("%d\n",e.key.code);
+          printf("%c\n",e.key.code);
           break;
         case NKC_KEY_0:
         case NKC_KEY_1:
@@ -170,19 +172,22 @@ void mainLoop(void *loopArg) {
         case NKC_KEY_DELETE:buffer[0] = 0;
           global_context->current_input_index = 0;
           break;
-        case NKC_KEY_E:printf("%c\n", '=');
+        case GLFW_KEY_EQUAL:
+        case GLFW_KEY_KP_EQUAL:
+          printf("%c\n", '=');
           break;
-        case NKC_KEY_S:printf("%c\n", '-');
+        case GLFW_KEY_MINUS:
+          printf("%c\n", '-');
           break;
-        case NKC_KEY_M:printf("%c\n", '*');
+        case NKC_KEY_S:printf("%c\n", '*');
           break;
         case NKC_KEY_A:printf("%c\n", '+');
           break;
         case NKC_KEY_D:printf("%c\n", '/');
           break;
         case NKC_KEY_BACKSPACE:
-          buffer[global_context->current_input_index--] = 0;
-
+          if (global_context->current_input_index >0)
+            buffer[global_context->current_input_index--] = 0;
           break;
       }
     }
