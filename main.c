@@ -51,7 +51,7 @@ void mainLoop(void *loopArg) {
     nk_layout_row_dynamic(ctx, row_h, 5);
     int i = 1;
     char c[2] = "";
-    for (i; i < 4; ++i) {
+    for (; i < 4; ++i) {
       nk_itoa(c, i);
       if (nk_button_label(ctx, c)) {
         strcat(buffer, c);
@@ -175,6 +175,8 @@ void mainLoop(void *loopArg) {
         case GLFW_KEY_EQUAL:
         case GLFW_KEY_KP_EQUAL:
           printf("%c\n", '=');
+          // TODO вызывать ./old_polish/input.c
+          //  его нужно немного переделать под работу с GUI
           break;
         case GLFW_KEY_MINUS:
           printf("%c\n", '-');
